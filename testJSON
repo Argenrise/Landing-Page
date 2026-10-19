@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON Reader</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 700px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      line-height: 1.5;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 0.9rem;
+    }
+    .error { color: #b00020; }
+  </style>
+</head>
+<body>
+  <h1>Contents of test.json</h1>
+  <pre id="output">Loading…</pre>
+
+  <script>
+    async function loadJson() {
+      const output = document.getElementById('output');
+
+      try {
+        // Relative path — resolves next to index.html
+        const response = await fetch('test.json');
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status} — file not found?`);
+        }
+
+        const data = await response.json();
+
+        // Pretty-print the parsed object back to JSON
+        output.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        output.classList.add('error');
+        output.textContent = 'Error loading test.json:\n' + err.message;
+      }
+    }
+
+    loadJson();
+  </script>
+</body>
+</html>
