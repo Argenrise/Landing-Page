@@ -1,0 +1,10 @@
+{
+  "name": "Example Data",
+  "version": 1,
+  "tags": ["github-pages", "json", "fetch"],
+  "active": true,
+  "details": {
+    "author": "You",
+    "created": "2026-10-19"
+  }
+}
