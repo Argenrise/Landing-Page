@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>MechKit – Mechanical Engineering Toolkit</title>
+<title>MechKit - Mechanical Engineering Toolkit</title>
 <style>
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f6f7f9;--sf:#fff;--tx:#1a1f2b;--mu:#5b6475;--ac:#0b5fd1;--ac2:#e4eeff;--bd:#d5dae3;--ok:#0a7a45}
 @media(prefers-color-scheme:dark){:root:not([data-theme=light]){color-scheme:dark;--bg:#12151c;--sf:#1b1f29;--tx:#e8ebf2;--mu:#9aa3b5;--ac:#6aa8ff;--ac2:#1f3354;--bd:#343b4b;--ok:#4cd08a}}
@@ -35,6 +35,7 @@ td button{min-height:28px;padding:2px 8px;border-style:dashed}
 .bin li{display:flex;justify-content:space-between;gap:6px;padding:6px 0;border-bottom:1px solid var(--bd);font-size:.9rem;list-style:none}
 .bin ul{padding:0;margin:8px 0}.bin small{color:var(--mu);display:block}
 .note{color:var(--mu);font-size:.85rem;margin-top:12px}
+#add{margin-top:14px;border-top:1px solid var(--bd);padding-top:10px}#add h3{margin:0 0 4px;font-size:1rem}#add .f{margin-top:8px}#add button{margin-top:10px;width:100%}[hidden]{display:none!important}
 #st{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:8px 14px;border-radius:20px;opacity:0;transition:opacity .2s;pointer-events:none}#st.on{opacity:1}
 @media(max-width:960px){.wrap{grid-template-columns:1fr}nav{display:none}nav.open{display:block}#menu{display:inline-block}}
 @media(min-width:961px){#menu{display:none}}
@@ -43,7 +44,14 @@ td button{min-height:28px;padding:2px 8px;border-style:dashed}
 <header><button id="menu" aria-expanded="false" aria-controls="nav">☰ Tools</button><h1>MechKit</h1>
 <input type="search" id="q" placeholder="Search tools…" aria-label="Search tools"></header>
 <div class="wrap"><nav id="nav" aria-label="Tools"></nav><main id="main" tabindex="-1"></main>
-<aside id="bin" class="bin" aria-label="Chain bin"></aside></div>
+<aside id="bin" class="bin" aria-label="Chain bin"><div id="binl"></div>
+<form id="add" aria-labelledby="addh"><h3 id="addh">Add your own value</h3>
+<div class="f"><label for="ad">Description</label><input id="ad" required maxlength="60" placeholder="e.g. Shaft diameter"></div>
+<div class="f"><label for="av">Value</label><input id="av" type="number" step="any" inputmode="decimal" required></div>
+<div class="f"><label for="au">Unit</label><select id="au"></select></div>
+<div class="f" id="acw" hidden><label for="ac">Custom unit</label><input id="ac" maxlength="20" placeholder="e.g. W/m·K"></div>
+<button type="submit">＋ Add to bin</button>
+<p class="note">Standard units match the tool inputs, so the value is offered wherever it fits. Custom units can be inserted into any input.</p></form></aside></div>
 <div id="st" role="status" aria-live="polite"></div>
 <script>
 const PI=Math.PI,DG=PI/180,I=(k,l,u,kind,v)=>({k,l,u,kind,v}),O=(l,u,kind,val)=>({l,u,kind,val}),Sel=(k,l,o,v)=>({k,l,o,v});
@@ -135,7 +143,7 @@ if(Object.values(v).some(x=>x!==x)){el.innerHTML='<p class="p">Enter every input
 outs=cur.run(v);el.innerHTML='<h3>Results</h3>'+outs.map((o,n)=>{if(o.msg)return`<p>${o.msg}</p>`;const tg=T.filter(t=>t.id!=cur.id).map(t=>({t,l:t.in.filter(i=>ok(i,o.kind))})).filter(x=>x.l.length);
 return`<div class="o"><span>${o.l}</span><b>${f(o.val)} <small>${o.u||''}</small></b><div class="a"><button data-pin="${n}">＋ Pin to bin</button><select data-send="${n}" aria-label="Send ${o.l} to another tool"><option value="">→ Send to tool…</option>${tg.map(x=>`<optgroup label="${x.t.n}">${x.l.map(i=>`<option value="${x.t.id}|${i.k}">${i.l}</option>`).join('')}</optgroup>`).join('')}</select></div></div>`}).join('')+'<p class="note">Check units: lengths mm, forces N, stresses MPa unless noted. Results are for learning and quick estimates – verify against codes and standards.</p>'}
 function pickers(){document.querySelectorAll('[data-pick]').forEach(s=>{const i=cur.in.find(x=>x.k==s.dataset.pick),c=bin.filter(b=>ok(i,b.kind));s.innerHTML='<option value="">↤</option>'+c.map(b=>`<option value="${b.id}">${b.l}: ${f(b.val)} ${b.u||''}</option>`).join('');s.disabled=!c.length;s.title=c.length?'Insert value from bin':'No compatible values in bin'})}
-function binui(){$('#bin').innerHTML=`<h2 style="font-size:1.05rem">Chain bin</h2><p class="p" style="margin:0"><small>Pin results here, then insert them into any compatible input with the ↤ menu.</small></p><ul>${bin.map(b=>`<li><span><b>${f(b.val)}</b> ${b.u||''}<small>${b.l}</small></span><button data-del="${b.id}" aria-label="Remove ${b.l}">✕</button></li>`).join('')||'<li><small>Empty</small></li>'}</ul>${bin.length?'<button data-clr>Clear all</button>':''}`;if(cur&&cur.in)pickers()}
+function binui(){$('#binl').innerHTML=`<h2 style="font-size:1.05rem">Chain bin</h2><p class="p" style="margin:0"><small>Pin results here or add your own below, then insert them into any compatible input with the ↤ menu.</small></p><ul>${bin.map(b=>`<li><span><b>${f(b.val)}</b> ${b.u||''}<small>${b.l}</small></span><button data-del="${b.id}" aria-label="Remove ${b.l}">✕</button></li>`).join('')||'<li><small>Empty</small></li>'}</ul>${bin.length?'<button data-clr>Clear all</button>':''}`;if(cur&&cur.in)pickers()}
 function pin(l,val,kind,u){bin.unshift({id:++nid,l,val,kind,u});binui();say('Pinned: '+l)}
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;
 if(d.pin!==undefined){const o=outs[d.pin];pin(cur.n+' – '+o.l,o.val,o.kind,o.u)}
@@ -148,5 +156,9 @@ if(d.k)calc();
 if(d.pick&&t.value){const b=bin.find(x=>x.id==t.value);$('#i_'+d.pick).value=+b.val.toPrecision(8);t.selectedIndex=0;calc();say('Inserted '+f(b.val))}
 if(d.send&&t.value){const o=outs[d.send],[id,k]=t.value.split('|');(S[id]=S[id]||{})[k]=+o.val.toPrecision(8);location.hash=id;say('Sent '+f(o.val)+' to '+T.find(x=>x.id==id).n)}});
 addEventListener('hashchange',()=>{show(location.hash.slice(1));$('#nav').classList.remove('open')});
+const BU=[['mm','L','length'],['m','Lm','length'],['N','F','force'],['MPa','S','stress / pressure'],['N·m','T','torque / moment'],['GPa','E','modulus'],['mm²','A','area'],['mm⁴','I','second moment'],['mm³','Z','section modulus'],['rpm','N','speed'],['kW','Pk','power'],['W','Pw','power / heat flow'],['°C','C','temperature'],['kPa','Pkpa','pressure'],['kJ','Qk','energy'],['kg','M','mass'],['kg/m³','rho','density'],['µm/m·K','alpha','expansion coeff.'],['m/s','v','velocity'],['L/min','Q','flow rate'],['deg','deg','angle'],['(none)','n','dimensionless']];
+$('#au').innerHTML=BU.map(([u,k,n])=>`<option value="${k}|${u}">${u} – ${n}</option>`).join('')+'<option value="any|">Other (custom unit)…</option>';
+$('#au').onchange=e=>{$('#acw').hidden=!e.target.value.startsWith('any|')};
+$('#add').onsubmit=e=>{e.preventDefault();const[k,u]=$('#au').value.split('|');pin($('#ad').value.trim(),+$('#av').value,k,k=='any'?$('#ac').value.trim():u=='(none)'?'':u);e.target.reset();$('#acw').hidden=true;$('#ad').focus()};
 binui();show(location.hash.slice(1)||'conv');
 </script></body></html>
